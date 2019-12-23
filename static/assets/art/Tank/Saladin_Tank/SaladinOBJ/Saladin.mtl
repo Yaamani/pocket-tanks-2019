@@ -1,0 +1,480 @@
+newmtl Tail_Light_Holder
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Shield
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Bar
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Grill_Cover
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl RearMetal_Vertical
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl TurretCover_Bolt_Fixed
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Gallon_Holder
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl RearMetal
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Saladin_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Grill
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Periscope
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Headlight_Holder_Small
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl RearMetal_Cover
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Tool_Container
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Handle
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl ShieldLatch
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl HeadLamp_Prop
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Small_Fender
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl BackNumberPlate
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Cylinder
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Turret_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Bolts_and_Nuts
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Tool_Container_Front
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Default
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Wheel
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Tire_Material2
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Tire_Thread
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Terret_Cover
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl TurretCover_Bolt02
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GrenadeLauncher
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GunMount_Top
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl TurretCover_Pole
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Barrel_Material2
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GunMount_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Reel
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GrenadeLauncher_Attach
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Browning
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Turret_Material
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Turret_Part01
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GrenadeLauncher_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl GrenadeLauncher_Side
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Turret_Cover
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl CanonBase_Back
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl CanonBase_01
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl CanonBase_Middle
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl HeadLamp_Holder
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl HeadLamp_Inner
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Brake_Light_Cover
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Headlight_Small
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Plate_Handle
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl FrontBolt_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl FrontBolt_Small
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Brake_Light
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Metal_Cylinder_Holder
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl RearTank
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl TooL_Box_Low
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl HeadLight_Red
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl HeadLight
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Wheel_Guard
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
+newmtl Wheel_Base
+Ns 256
+d 1
+illum 2
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+
