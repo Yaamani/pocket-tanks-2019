@@ -7,19 +7,24 @@ import { vec3, mat4 } from 'gl-matrix';
 import FlyCameraController from '../common/camera-controllers/fly-camera-controller';
 import Input from '../common/input';
 import { Vec3 } from 'webgl-obj-loader';
+import { Key } from 'ts-key-enum';
 
 
 export default class PocketTanks2019 extends Scene {
 
     program: ShaderProgram;
     camera: Camera;
+    camera2: Camera;
     controller: FlyCameraController;
     input: Input;
 
     tankPos: vec3;
     tankRotY: number;
+    
+    tankPos2: vec3;
+    tankRotY2: number;
+    
     tankMesh: Mesh;
-
     tankTexture: WebGLTexture;
     tankSampler: WebGLSampler;
     
@@ -63,6 +68,10 @@ export default class PocketTanks2019 extends Scene {
 
         this.tankPos = vec3.fromValues(0, 0, -10);
         this.tankRotY = 0;
+
+        this.tankPos2 = vec3.fromValues(0, 0, -10);
+        this.tankRotY2 = 0;
+
         
         this.tankMesh = MeshUtils.LoadOBJMesh(this.gl, this.game.loader.resources["tank-model"]);
 
@@ -84,9 +93,11 @@ export default class PocketTanks2019 extends Scene {
 
         this.camera = new Camera();
         this.camera.type = 'perspective';
-        this.camera.position = vec3.fromValues(0,5,-3);
-        this.camera.direction = vec3.fromValues(0,0,-1);
         this.camera.aspectRatio = this.gl.drawingBufferWidth/this.gl.drawingBufferHeight;
+
+        this.camera2 = new Camera();
+        this.camera2.type = 'perspective';
+        this.camera2.aspectRatio = this.gl.drawingBufferWidth/this.gl.drawingBufferHeight;
 
         this.initializeCameraFlyController();
 
@@ -107,45 +118,49 @@ export default class PocketTanks2019 extends Scene {
 
         //throw new Error("Method not implemented.");
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        
+
         this.program.use();
 
+        this.listenForPlayer1Input();
+        this.listenForPlayer2Input();
 
-        if (this.input.isKeyDown('w')) {
-            this.tankPos[2] += Math.cos(this.tankRotY) * 0.135;
-            this.tankPos[0] += Math.sin(this.tankRotY) * 0.135;
+        
 
-            //this.camera.direction[2] += Math.cos(this.tankRotY) * 0.135;
-            //this.camera.direction[0] += Math.sin(this.tankRotY) * 0.135;
+        let VP1 = this.camera.ViewProjectionMatrix;
+        let VP2 = this.camera2.ViewProjectionMatrix;
+
+        let defaultVP = VP1; 
+
+        if (this.input.isKeyDown('1')) {
+            defaultVP = VP1;
         }
-
-        if (this.input.isKeyDown('s')) {
-            this.tankPos[2] -= Math.cos(this.tankRotY) * 0.135;
-            this.tankPos[0] -= Math.sin(this.tankRotY) * 0.135;
-
-            //this.camera.direction[2] -= Math.cos(this.tankRotY) * 0.135;
-            //this.camera.direction[0] -= Math.sin(this.tankRotY) * 0.135;
+        if (this.input.isKeyDown('2')) {
+            defaultVP = VP2;
         }
+        
+        let groundMat = mat4.clone(defaultVP);
+        mat4.scale(groundMat, groundMat, [100, 1, 100]);
 
-        if (this.input.isKeyDown('a')) {
-            this.tankRotY+= 0.035;
-        }
 
-        if (this.input.isKeyDown('d')) {
-            this.tankRotY-= 0.035;
-        }
 
-        let VP = this.camera.ViewProjectionMatrix;
 
-        let tankMat = mat4.clone(VP);
+
+        let tankMat = mat4.clone(defaultVP);
         mat4.translate(tankMat, tankMat, this.tankPos);
-        mat4.rotate(tankMat, tankMat, this.tankRotY, [0, 1, 0]);
+        mat4.rotateY(tankMat, tankMat, this.tankRotY);
  
         this.camera.position = vec3.fromValues(this.tankPos[0]-Math.sin(this.tankRotY)*5, this.tankPos[1] + 5, this.tankPos[2]-Math.cos(this.tankRotY)*5);
         this.camera.direction = vec3.fromValues(Math.sin(this.tankRotY), this.tankPos[1], Math.cos(this.tankRotY));
 
-        let groundMat = mat4.clone(VP);
-        mat4.scale(groundMat, groundMat, [100, 1, 100]);
+
+
+
+        let tankMat2 = mat4.clone(defaultVP);
+        mat4.translate(tankMat2, tankMat2, this.tankPos2);
+        mat4.rotateY(tankMat2, tankMat2, this.tankRotY2);
+
+        this.camera2.position = vec3.fromValues(this.tankPos2[0]-Math.sin(this.tankRotY2)*5, this.tankPos2[1] + 5, this.tankPos2[2]-Math.cos(this.tankRotY2)*5);
+        this.camera2.direction = vec3.fromValues(Math.sin(this.tankRotY2), this.tankPos2[1], Math.cos(this.tankRotY2));
 
         // let M = mat4.identity(mat4.create()); // Since we won't move the rectangle, M is an identity matrix
         // // The view matrix can be created using the function LookAt which takes the camera position, its target and its up direction
@@ -163,6 +178,13 @@ export default class PocketTanks2019 extends Scene {
 
         this.program.setUniform2f("tiling_factor", [1, 1]);
         this.program.setUniformMatrix4fv("MVP", false, tankMat);
+        this.program.setUniform4f("tint", [1, 1, 1, 1]);
+        
+        this.drawTexture(this.tankTexture, this.tankSampler);
+        this.tankMesh.draw(this.gl.TRIANGLES);
+
+        this.program.setUniform2f("tiling_factor", [1, 1]);
+        this.program.setUniformMatrix4fv("MVP", false, tankMat2);
         this.program.setUniform4f("tint", [1, 1, 1, 1]);
         
         this.drawTexture(this.tankTexture, this.tankSampler);
@@ -227,5 +249,45 @@ export default class PocketTanks2019 extends Scene {
     private initializeCameraFlyController() {
         this.controller = new FlyCameraController(this.camera, this.game.input);
         this.controller.movementSensitivity = 0.005;
+    }
+
+    private listenForPlayer1Input() {
+        if (this.input.isKeyDown('w')) {
+            this.tankPos[2] += Math.cos(this.tankRotY) * 0.135;
+            this.tankPos[0] += Math.sin(this.tankRotY) * 0.135;
+        }
+
+        if (this.input.isKeyDown('s')) {
+            this.tankPos[2] -= Math.cos(this.tankRotY) * 0.135;
+            this.tankPos[0] -= Math.sin(this.tankRotY) * 0.135;
+        }
+
+        if (this.input.isKeyDown('a')) {
+            this.tankRotY+= 0.035;
+        }
+
+        if (this.input.isKeyDown('d')) {
+            this.tankRotY-= 0.035;
+        }
+    }
+
+    private listenForPlayer2Input() {
+        if (this.input.isKeyDown(Key.ArrowUp)) {
+            this.tankPos2[2] += Math.cos(this.tankRotY2) * 0.135;
+            this.tankPos2[0] += Math.sin(this.tankRotY2) * 0.135;
+        }
+
+        if (this.input.isKeyDown(Key.ArrowDown)) {
+            this.tankPos2[2] -= Math.cos(this.tankRotY2) * 0.135;
+            this.tankPos2[0] -= Math.sin(this.tankRotY2) * 0.135;
+        }
+
+        if (this.input.isKeyDown(Key.ArrowLeft)) {
+            this.tankRotY2+= 0.035;
+        }
+
+        if (this.input.isKeyDown(Key.ArrowRight)) {
+            this.tankRotY2-= 0.035;
+        }
     }
 }
