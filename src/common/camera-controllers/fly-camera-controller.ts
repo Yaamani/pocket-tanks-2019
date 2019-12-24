@@ -47,12 +47,12 @@ export default class FlyCameraController {
             this.camera.direction = vec3.fromValues(Math.cos(this.yaw)*Math.cos(this.pitch), Math.sin(this.pitch), Math.sin(this.yaw)*Math.cos(this.pitch))
             
             const movement = vec3.create();
-            if(this.input.isKeyDown("w")) movement[2] += 1;
-            if(this.input.isKeyDown("s")) movement[2] -= 1;
-            if(this.input.isKeyDown("d")) movement[0] += 1;
-            if(this.input.isKeyDown("a")) movement[0] -= 1;
-            if(this.input.isKeyDown("q")) movement[1] += 1;
-            if(this.input.isKeyDown("e")) movement[1] -= 1;
+            // if(this.input.isKeyDown("w")) movement[2] += 1;
+            // if(this.input.isKeyDown("s")) movement[2] -= 1;
+            // if(this.input.isKeyDown("d")) movement[0] += 1;
+            // if(this.input.isKeyDown("a")) movement[0] -= 1;
+            // if(this.input.isKeyDown("q")) movement[1] += 1;
+            // if(this.input.isKeyDown("e")) movement[1] -= 1;
             vec3.normalize(movement, movement);
             
             let movementSensitivity = this.input.isKeyDown(Key.Shift)?this.fastMovementSensitivity:this.movementSensitivity;

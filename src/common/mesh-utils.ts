@@ -45,8 +45,8 @@ export function Plane(gl: WebGL2RenderingContext, texCoords: {min:[number, numbe
         0, 1, 0 
     ]), gl.STATIC_DRAW);
     mesh.setElementsData(new Uint32Array([
-        0, 1, 2,
-        2, 3, 0
+        2, 1, 0,
+        2, 0, 3
     ]), gl.STATIC_DRAW);
     return mesh
 }
