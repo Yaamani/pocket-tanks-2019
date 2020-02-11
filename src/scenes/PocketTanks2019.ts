@@ -78,6 +78,13 @@ interface Object3D {
     modelMatrix: mat4
 };
 
+
+interface Bullet {
+    modelMat: mat4,
+    orientationY: number, 
+    owner: "leftPlayer"|"rightPlayer"
+}
+
 export default class PocketTanks2019 extends Scene {
 
     program: ShaderProgram;
@@ -86,11 +93,11 @@ export default class PocketTanks2019 extends Scene {
     controller: FlyCameraController;
     input: Input;
 
-    tankPos: vec3;
-    tankRotY: number;
+    tankPosLeft: vec3;
+    tankRotYLeft: number;
     
-    tankPos2: vec3;
-    tankRotY2: number;
+    tankPosRight: vec3;
+    tankRotYRight: number;
     
     tankMesh: Mesh;
     tankTexture: WebGLTexture;
@@ -103,6 +110,15 @@ export default class PocketTanks2019 extends Scene {
     groundAlbedo: WebGLTexture;
     groundNormal: WebGLTexture;
     groundRoughness: WebGLTexture;
+
+    bulletMesh: Mesh;
+    bulletAlbedo: WebGLTexture;
+    bulletNormal: WebGLTexture;
+    bulletRoughness: WebGLTexture;
+    bulletEmissive: WebGLTexture;
+    bulletAmbientOcclusion: WebGLTexture;
+
+    bullets: Bullet[] = [];
 
     whiteTexture: WebGLTexture;
     blackTexture: WebGLTexture;
@@ -118,16 +134,16 @@ export default class PocketTanks2019 extends Scene {
 
 
     lights: Light[] = [
-        { type: "ambient", enabled: true, skyColor: vec3.fromValues(1, 1, 1), groundColor: vec3.fromValues(0.1, 0.1, 0.1), skyDirection: vec3.fromValues(0,1,0)},
+        { type: "ambient", enabled: true, skyColor: vec3.fromValues(1, 1, 1), groundColor: vec3.fromValues(0.5, 0.5, 0.5), skyDirection: vec3.fromValues(0,1,0)},
         { type: 'directional', enabled: true, color: vec3.fromValues(0.5,0.5,0.5), direction:vec3.fromValues(0,-1,0) },
-        { type: 'point', enabled: true, color: vec3.fromValues(1,0,0), position:vec3.fromValues(+6,+1,+0), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0 },
+        { type: 'point', enabled: true, color: vec3.fromValues(1,0,0), position:vec3.fromValues(22,+13,+0), attenuation_quadratic:0.5, attenuation_linear:0, attenuation_constant:0 },
         { type: 'point', enabled: true, color: vec3.fromValues(0,1,0), position:vec3.fromValues(-6,+1,+0), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0 },
         { type: 'point', enabled: true, color: vec3.fromValues(0,0,1), position:vec3.fromValues(+0,+1,+6), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0 },
         { type: 'point', enabled: true, color: vec3.fromValues(1,1,0), position:vec3.fromValues(+0,+1,-6), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0 },
-        { type: 'spot', enabled: true, color: vec3.fromValues(5,0,0), position:vec3.fromValues(+3,+1,+3), direction:vec3.fromValues(-1,0,-1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI },
-        { type: 'spot', enabled: true, color: vec3.fromValues(0,5,0), position:vec3.fromValues(-3,+1,+3), direction:vec3.fromValues(+1,0,-1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
-        { type: 'spot', enabled: true, color: vec3.fromValues(0,0,5), position:vec3.fromValues(+3,+1,-3), direction:vec3.fromValues(-1,0,+1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
-        { type: 'spot', enabled: true, color: vec3.fromValues(5,5,0), position:vec3.fromValues(-3,+1,-3), direction:vec3.fromValues(+1,0,+1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
+        { type: 'spot', enabled: true, color: vec3.fromValues(1,1,1), position:vec3.fromValues(+32,+1,+3), direction:vec3.fromValues(-1,0,-1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI },
+        { type: 'spot', enabled: true, color: vec3.fromValues(0,5,0), position:vec3.fromValues(-3,+1,+32), direction:vec3.fromValues(+1,0,-1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
+        { type: 'spot', enabled: true, color: vec3.fromValues(5,5,5), position:vec3.fromValues(32,+1,-32), direction:vec3.fromValues(-1,0,+1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
+        { type: 'spot', enabled: true, color: vec3.fromValues(5,5,0), position:vec3.fromValues(-32,+1,-32), direction:vec3.fromValues(+1,0,+1), attenuation_quadratic:1, attenuation_linear:0, attenuation_constant:0, inner_cone: 0.25*Math.PI, outer_cone: 0.3*Math.PI  },
     ];
 
     lightPrograms: {[name: string]: ShaderProgram} = {};
@@ -159,7 +175,14 @@ export default class PocketTanks2019 extends Scene {
                 ["ground-texture"]:{url:'assets/ground/TexturesCom_MuddySand2_2x2_2K_height.jpg' ,type:'image'},
                 ["ground-texture-albedo"]:{url:'assets/ground/TexturesCom_MuddySand2_2x2_2K_albedo.jpg' ,type:'image'}, 
                 ["ground-texture-normal"]:{url:'assets/ground/TexturesCom_MuddySand2_2x2_2K_normal.jpg' ,type:'image'}, 
-                ["ground-texture-roughness"]:{url:'assets/ground/TexturesCom_MuddySand2_2x2_2K_roughness.jpg' ,type:'image'}
+                ["ground-texture-roughness"]:{url:'assets/ground/TexturesCom_MuddySand2_2x2_2K_roughness.jpg' ,type:'image'}, 
+
+                ["bullet-model"]:{url:'assets/art/Bullet/9x19-lead-bullet/lead-bullet.obj', type: 'text'},
+                ["bullet-texture-albedo"] :{url:'assets/art/Bullet/9x19-lead-bullet/textures/pula_albedo.jpeg', type: 'image'}, 
+                ["bullet-texture-ambient-occlusion"] :{url:'assets/art/Bullet/9x19-lead-bullet/textures/pula_AO.jpeg', type: 'image'}, 
+                ["bullet-texture-emissive"] :{url:'assets/art/Bullet/9x19-lead-bullet/textures/pula_metallic.jpeg', type: 'image'}, 
+                ["bullet-texture-roughness"] :{url:'assets/art/Bullet/9x19-lead-bullet/textures/pula_roughness.jpeg', type: 'image'}, 
+                ["bullet-texture-normal"] :{url:'assets/art/Bullet/9x19-lead-bullet/textures/pula_normal.jpeg', type: 'image'}
 
             }
         );
@@ -183,15 +206,16 @@ export default class PocketTanks2019 extends Scene {
         this.program = new ShaderProgram(this.gl);
         this.initializeShader(this.program, 'texture');
 
-        this.tankPos = vec3.fromValues(0, 0, -10);
-        this.tankRotY = 0;
+        this.tankPosLeft = vec3.fromValues(0, 0, -10);
+        this.tankRotYLeft = 0;
 
-        this.tankPos2 = vec3.fromValues(0, 0, 10);
-        this.tankRotY2 = 0;
+        this.tankPosRight = vec3.fromValues(0, 0, 10);
+        this.tankRotYRight = Math.PI;
 
         
         this.tankMesh = MeshUtils.LoadOBJMesh(this.gl, this.game.loader.resources["tank-model"]);
         this.groundMesh = MeshUtils.Plane(this.gl, {min:[0,0], max:[100,100]});
+        this.bulletMesh = MeshUtils.LoadOBJMesh(this.gl, this.game.loader.resources["bullet-model"]);
 
         this.initializeTankTexture();
         this.initializeTankNormal();
@@ -202,6 +226,12 @@ export default class PocketTanks2019 extends Scene {
         this.initializeGroundAlbedo();
         this.initializeGroundNormal();
         this.initializeGroundRoughness();
+
+        this.initializeBulletAlbedo();
+        this.initializeBulletNormal();
+        this.initializeBulletRoughness();
+        this.initializeBulletEmissive();
+        this.initializeBulletAmbientOcclusion();
 
 
         this.initializeUniversalSampler();
@@ -228,7 +258,7 @@ export default class PocketTanks2019 extends Scene {
             mesh: this.tankMesh,
             material: {
                 albedo: this.tankTexture,
-                albedo_tint: vec3.fromValues(1, 0.5, 0.5),
+                albedo_tint: vec3.fromValues(1, 1, 1),
                 specular: this.blackTexture,
                 specular_tint: vec3.fromValues(1, 1, 1),
                 roughness: this.tankRoughness,
@@ -257,6 +287,25 @@ export default class PocketTanks2019 extends Scene {
             texture: this.tankTexture, 
             modelMatrix: mat4.fromRotationTranslationScale(mat4.create(), quat.create(), vec3.fromValues(0, 0, 10), vec3.fromValues(1, 1, 1))
         };
+
+        this.objects['bullet'] = {
+            mesh: this.bulletMesh, 
+            material: {
+                albedo: this.bulletAlbedo,
+                albedo_tint: vec3.fromValues(1, 1, 1),
+                specular: this.bulletEmissive,
+                specular_tint: vec3.fromValues(1, 1, 1),
+                roughness: this.bulletRoughness,
+                roughness_scale: 1,
+                emissive: this.blackTexture,
+                emissive_tint: vec3.fromValues(1, 1, 1),
+                ambient_occlusion: this.bulletAmbientOcclusion
+            }, 
+            texture: this.blackTexture, 
+            modelMatrix: mat4.fromRotationTranslationScale(mat4.create(), quat.create(), vec3.fromValues(0, 3, 0), vec3.fromValues(1, 1, 1))
+        }
+
+
         
 
         this.camera = new Camera();
@@ -282,7 +331,6 @@ export default class PocketTanks2019 extends Scene {
         this.listenForPlayer1Input();
         this.listenForPlayer2Input();
 
-        this.gl.enable(this.gl.SCISSOR_TEST);
         this.gl.viewport(0,0,640,720);
         this.gl.scissor(0,0,640,720);
         //this.gl.clearColor(0,0,0,1);
@@ -304,7 +352,7 @@ export default class PocketTanks2019 extends Scene {
         //throw new Error("Method not implemented.");
 
         
-
+        //this.gl.disable(this.gl.SCISSOR_TEST);
         
     }
     
@@ -350,12 +398,12 @@ export default class PocketTanks2019 extends Scene {
 
 
 
-        // mat4.translate(this.objects['tank'].modelMatrix, this.objects['tank'].modelMatrix, this.tankPos);
-        // mat4.rotateY(this.objects['tank'].modelMatrix, this.objects['tank'].modelMatrix, this.tankRotY);
+        // mat4.translate(this.objects['tank'].modelMatrix, this.objects['tank'].modelMatrix, this.tankPosLeft);
+        // mat4.rotateY(this.objects['tank'].modelMatrix, this.objects['tank'].modelMatrix, this.tankRotYLeft);
         this.objects['tank'].modelMatrix = mat4.fromRotationTranslationScale(
             this.objects['tank'].modelMatrix, 
-            quat.rotateY(quat.create(), quat.create(), this.tankRotY), 
-            this.tankPos, 
+            quat.rotateY(quat.create(), quat.create(), this.tankRotYLeft), 
+            this.tankPosLeft, 
             vec3.fromValues(1, 1, 1)
         );
 
@@ -363,21 +411,21 @@ export default class PocketTanks2019 extends Scene {
         //let tankMat = mat4.clone(defaultCamera.ViewProjectionMatrix);
         //mat4.mul(tankMat, this.objects['tank'].modelMatrix, tankMat);
  
-        this.camera.position = vec3.fromValues(this.tankPos[0]-Math.sin(this.tankRotY)*5, this.tankPos[1] + 5, this.tankPos[2]-Math.cos(this.tankRotY)*5);
-        this.camera.direction = vec3.fromValues(Math.sin(this.tankRotY), this.tankPos[1], Math.cos(this.tankRotY));
+        this.camera.position = vec3.fromValues(this.tankPosLeft[0]-Math.sin(this.tankRotYLeft)*5, this.tankPosLeft[1] + 5, this.tankPosLeft[2]-Math.cos(this.tankRotYLeft)*5);
+        this.camera.direction = vec3.fromValues(Math.sin(this.tankRotYLeft), this.tankPosLeft[1], Math.cos(this.tankRotYLeft));
 
-
+        //console.log(this.bullets.length);
 
 
         this.objects['tank2'].modelMatrix = mat4.fromRotationTranslationScale(
             this.objects['tank2'].modelMatrix, 
-            quat.rotateY(quat.create(), quat.create(), this.tankRotY2), 
-            this.tankPos2, 
+            quat.rotateY(quat.create(), quat.create(), this.tankRotYRight), 
+            this.tankPosRight, 
             vec3.fromValues(1, 1, 1)
         );
 
-        this.camera2.position = vec3.fromValues(this.tankPos2[0]-Math.sin(this.tankRotY2)*5, this.tankPos2[1] + 5, this.tankPos2[2]-Math.cos(this.tankRotY2)*5);
-        this.camera2.direction = vec3.fromValues(Math.sin(this.tankRotY2), this.tankPos2[1], Math.cos(this.tankRotY2));
+        this.camera2.position = vec3.fromValues(this.tankPosRight[0]-Math.sin(this.tankRotYRight)*5, this.tankPosRight[1] + 5, this.tankPosRight[2]-Math.cos(this.tankRotYRight)*5);
+        this.camera2.direction = vec3.fromValues(Math.sin(this.tankRotYRight), this.tankPosRight[1], Math.cos(this.tankRotYRight));
 
         // let M = mat4.identity(mat4.create()); // Since we won't move the rectangle, M is an identity matrix
         // // The view matrix can be created using the function LookAt which takes the camera position, its target and its up direction
@@ -468,48 +516,65 @@ export default class PocketTanks2019 extends Scene {
                     program.setUniform2f("tiling_factor", [0.2, 0.2]);
                 }
 
-                // Create model matrix for the object
-                program.setUniformMatrix4fv("M", false, obj.modelMatrix);
-                program.setUniformMatrix4fv("M_it", true, mat4.invert(mat4.create(), obj.modelMatrix));
-                
-                // Send material properties and bind the textures
-                program.setUniform3f("material.albedo_tint", obj.material.albedo_tint);
-                program.setUniform3f("material.specular_tint", obj.material.specular_tint);
-                program.setUniform3f("material.emissive_tint", obj.material.emissive_tint);
-                program.setUniform1f("material.roughness_scale", obj.material.roughness_scale);
-
-                this.gl.activeTexture(this.gl.TEXTURE0);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.albedo);
-                this.gl.bindSampler(0, this.universalSampler);
-                program.setUniform1i("material.albedo", 0);
-
-                this.gl.activeTexture(this.gl.TEXTURE1);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.specular);
-                this.gl.bindSampler(1, this.universalSampler);
-                program.setUniform1i("material.specular", 1);
-
-                this.gl.activeTexture(this.gl.TEXTURE2);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.roughness);
-                this.gl.bindSampler(2, this.universalSampler);
-                program.setUniform1i("material.roughness", 2);
-
-                this.gl.activeTexture(this.gl.TEXTURE3);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.emissive);
-                this.gl.bindSampler(3, this.universalSampler);
-                program.setUniform1i("material.emissive", 3);
-
-                this.gl.activeTexture(this.gl.TEXTURE4);
-                this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.ambient_occlusion);
-                this.gl.bindSampler(4, this.universalSampler);
-                program.setUniform1i("material.ambient_occlusion", 4);
-                
-                // Draw the object
-                obj.mesh.draw(this.gl.TRIANGLES);
+                if (name != 'bullet') {
+                    // Create model matrix for the object
+                    program.setUniformMatrix4fv("M", false, obj.modelMatrix);
+                    program.setUniformMatrix4fv("M_it", true, mat4.invert(mat4.create(), obj.modelMatrix));
+                    
+                    this.drawMaterials(program, obj);
+                    
+                    // Draw the object
+                    obj.mesh.draw(this.gl.TRIANGLES);
+                } else {
+                    for (let i = 0; i < this.bullets.length; i++) {
+                        // Create model matrix for the object
+                        this.bullets[i].modelMat = mat4.translate(mat4.create(), this.bullets[i].modelMat, vec3.fromValues(Math.sin(this.bullets[i].orientationY)/40, 0, Math.cos(this.bullets[i].orientationY)/40))
+                        program.setUniformMatrix4fv("M", false, this.bullets[i].modelMat);
+                        program.setUniformMatrix4fv("M_it", true, mat4.invert(mat4.create(), this.bullets[i].modelMat));
+                        
+                        this.drawMaterials(program, obj);
+                        
+                        // Draw the object
+                        obj.mesh.draw(this.gl.TRIANGLES);
+                    }
+                }
             }   
         }
     }
 
 
+    private drawMaterials(program: ShaderProgram, obj: Object3D) {
+        // Send material properties and bind the textures
+        program.setUniform3f("material.albedo_tint", obj.material.albedo_tint);
+        program.setUniform3f("material.specular_tint", obj.material.specular_tint);
+        program.setUniform3f("material.emissive_tint", obj.material.emissive_tint);
+        program.setUniform1f("material.roughness_scale", obj.material.roughness_scale);
+
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.albedo);
+        this.gl.bindSampler(0, this.universalSampler);
+        program.setUniform1i("material.albedo", 0);
+
+        this.gl.activeTexture(this.gl.TEXTURE1);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.specular);
+        this.gl.bindSampler(1, this.universalSampler);
+        program.setUniform1i("material.specular", 1);
+
+        this.gl.activeTexture(this.gl.TEXTURE2);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.roughness);
+        this.gl.bindSampler(2, this.universalSampler);
+        program.setUniform1i("material.roughness", 2);
+
+        this.gl.activeTexture(this.gl.TEXTURE3);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.emissive);
+        this.gl.bindSampler(3, this.universalSampler);
+        program.setUniform1i("material.emissive", 3);
+
+        this.gl.activeTexture(this.gl.TEXTURE4);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, obj.material.ambient_occlusion);
+        this.gl.bindSampler(4, this.universalSampler);
+        program.setUniform1i("material.ambient_occlusion", 4);
+    }
 
     ////////////////////////////////////////////////////////
 
@@ -540,12 +605,15 @@ export default class PocketTanks2019 extends Scene {
     }
 
     private glFinalization() {
-        this.gl.enable(this.gl.CULL_FACE);
-        this.gl.cullFace(this.gl.BACK);
-        this.gl.frontFace(this.gl.CW);
+        //this.gl.enable(this.gl.CULL_FACE);
+        //this.gl.cullFace(this.gl.BACK);
+        //this.gl.frontFace(this.gl.CW);
 
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.depthFunc(this.gl.LEQUAL);
+
+        this.gl.enable(this.gl.SCISSOR_TEST);
+
     }
 
     ////////////////////////////////////////////////////////
@@ -604,6 +672,37 @@ export default class PocketTanks2019 extends Scene {
         this.initializeTexture("ground-texture-roughness");
     }
 
+    private initializeBulletAlbedo() {
+        this.bulletAlbedo = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bulletAlbedo);
+        this.initializeTexture("bullet-texture-albedo");
+    }
+
+    private initializeBulletNormal() {
+        this.bulletNormal = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bulletNormal);
+        this.initializeTexture("bullet-texture-normal");
+    }
+
+    private initializeBulletRoughness() {
+        this.bulletRoughness = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bulletRoughness);
+        this.initializeTexture("bullet-texture-roughness");
+    }
+    
+    private initializeBulletEmissive() {
+        this.bulletEmissive = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bulletEmissive);
+        this.initializeTexture("bullet-texture-emissive");
+    }
+        
+    private initializeBulletAmbientOcclusion() {
+        this.bulletAmbientOcclusion = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bulletAmbientOcclusion);
+        this.initializeTexture("bullet-texture-ambient-occlusion");
+    }
+
+
     private initializeCameraFlyController() {
         this.controller = new FlyCameraController(this.camera, this.game.input);
         this.controller.movementSensitivity = 0.005;
@@ -613,48 +712,56 @@ export default class PocketTanks2019 extends Scene {
         if (this.input.isKeyDown('w')) {
             let dis = this.getTankDistance();
 
-            this.tankPos[2] += Math.cos(this.tankRotY) * 0.135;
-            this.tankPos[0] += Math.sin(this.tankRotY) * 0.135;
+            this.tankPosLeft[2] += Math.cos(this.tankRotYLeft) * 0.135;
+            this.tankPosLeft[0] += Math.sin(this.tankRotYLeft) * 0.135;
             
             let otherdist =  this.getTankDistance();
             
             if(dis<this.tank_collision_threshold && otherdist<dis){
-                this.tankPos[2] -= Math.cos(this.tankRotY) * 0.135;
-                this.tankPos[0] -= Math.sin(this.tankRotY) * 0.135;
+                this.tankPosLeft[2] -= Math.cos(this.tankRotYLeft) * 0.135;
+                this.tankPosLeft[0] -= Math.sin(this.tankRotYLeft) * 0.135;
             }
         }
 
         if (this.input.isKeyDown('s')) {
             let dis = this.getTankDistance();
             
-            this.tankPos[2] -= Math.cos(this.tankRotY) * 0.135;
-            this.tankPos[0] -= Math.sin(this.tankRotY) * 0.135;
+            this.tankPosLeft[2] -= Math.cos(this.tankRotYLeft) * 0.135;
+            this.tankPosLeft[0] -= Math.sin(this.tankRotYLeft) * 0.135;
             let otherdist =  this.getTankDistance();
             
             if(dis<this.tank_collision_threshold && otherdist<dis){
-                this.tankPos[2] += Math.cos(this.tankRotY) * 0.135;
-                this.tankPos[0] += Math.sin(this.tankRotY) * 0.135;
+                this.tankPosLeft[2] += Math.cos(this.tankRotYLeft) * 0.135;
+                this.tankPosLeft[0] += Math.sin(this.tankRotYLeft) * 0.135;
             }   
         }
 
         if (this.input.isKeyDown('a')) {
-            this.tankRotY+= 0.035;
+            this.tankRotYLeft+= 0.035;
         }
 
         if (this.input.isKeyDown('d')) {
-            this.tankRotY-= 0.035;
+            this.tankRotYLeft-= 0.035;
         }
-        if(this.tankPos[0]>20){
-            this.tankPos[0]=20;
+
+        if (this.input.isKeyDown(' ')) {
+            // Add bullet to array
+            let m :mat4 = mat4.translate(mat4.create(), mat4.create() , this.tankPosRight);
+            this.bullets.push({modelMat: /*this.objects['tank2'].modelMatrix*/ m, orientationY:this.tankRotYRight, owner : "rightPlayer"});
+
+        } 
+
+        if(this.tankPosLeft[0]>97.5){
+            this.tankPosLeft[0]=97.5;
         }
-        if(this.tankPos[0] < -20){
-            this.tankPos[0]= -20;
+        if(this.tankPosLeft[0] < -97.5){
+            this.tankPosLeft[0]= -97.5;
         }
-        if(this.tankPos[2]>20){
-            this.tankPos[2]=20;
+        if(this.tankPosLeft[2]>97.5){
+            this.tankPosLeft[2]=97.5;
         }
-        if(this.tankPos[2]< -20){
-            this.tankPos[2]= -20;
+        if(this.tankPosLeft[2]< -97.5){
+            this.tankPosLeft[2]= -97.5;
         }
     }
 
@@ -662,14 +769,14 @@ export default class PocketTanks2019 extends Scene {
         if (this.input.isKeyDown(Key.ArrowUp)) {
             let dis = this.getTankDistance();
 
-            this.tankPos2[2] += Math.cos(this.tankRotY2) * 0.135;
-            this.tankPos2[0] += Math.sin(this.tankRotY2) * 0.135;
+            this.tankPosRight[2] += Math.cos(this.tankRotYRight) * 0.135;
+            this.tankPosRight[0] += Math.sin(this.tankRotYRight) * 0.135;
 
             let otherdist =  this.getTankDistance();
             
             if(dis<this.tank_collision_threshold && otherdist<dis){
-                this.tankPos2[2] -= Math.cos(this.tankRotY2) * 0.135;
-                this.tankPos2[0] -= Math.sin(this.tankRotY2) * 0.135;
+                this.tankPosRight[2] -= Math.cos(this.tankRotYRight) * 0.135;
+                this.tankPosRight[0] -= Math.sin(this.tankRotYRight) * 0.135;
             }
         }
 
@@ -677,39 +784,57 @@ export default class PocketTanks2019 extends Scene {
             let dis = this.getTankDistance();
             
             
-            this.tankPos2[2] -= Math.cos(this.tankRotY2) * 0.135;
-            this.tankPos2[0] -= Math.sin(this.tankRotY2) * 0.135;
+            this.tankPosRight[2] -= Math.cos(this.tankRotYRight) * 0.135;
+            this.tankPosRight[0] -= Math.sin(this.tankRotYRight) * 0.135;
             let otherdist =  this.getTankDistance();
             
             if(dis<this.tank_collision_threshold && otherdist<dis){
-                this.tankPos2[2] += Math.cos(this.tankRotY2) * 0.135;
-                this.tankPos2[0] += Math.sin(this.tankRotY2) * 0.135;
+                this.tankPosRight[2] += Math.cos(this.tankRotYRight) * 0.135;
+                this.tankPosRight[0] += Math.sin(this.tankRotYRight) * 0.135;
             }   
             
         }
 
         if (this.input.isKeyDown(Key.ArrowLeft)) {
-            this.tankRotY2+= 0.035;
+            this.tankRotYRight+= 0.035;
         }
 
         if (this.input.isKeyDown(Key.ArrowRight)) {
-            this.tankRotY2-= 0.035;
+            this.tankRotYRight-= 0.035;
         }
-        if(this.tankPos2[0]>20){
-            this.tankPos2[0]=20;
+
+        if (this.input.isKeyDown(Key.Shift)) {
+            // Add bullet to array
+            //let R: quat = quat.rotateX(quat.create(), quat.create(), 90 * 180/Math.PI);
+            //let M: mat4 = mat4.fromRotationTranslationScale(
+            //    mat4.create(), 
+            //    quat.rotateY(quat.create(), quat.rotateX(quat.create(), quat.create(), 90 * Math.PI/180), this.tankRotYRight), 
+            //    vec3.fromValues(this.tankPosLeft[0], this.tankPosLeft[1] + 2, this.tankPosLeft[2]), 
+            //    vec3.fromValues(1, 1, 1)
+            //);
+            //console.log(this.tankPosLeft);
+            ////let M: mat4 = mat4.fromRotationTranslationScale(mat4.create(), quat.create(), vec3.fromValues(0, 3, 0), vec3.fromValues(1, 1, 1));
+            ////let M: mat4 = mat4.
+            //this.bullets.push({modelMat: M/*mat4.create()*/ , orientationY:this.tankRotYRight , owner : "rightPlayer"});
+            let m :mat4 = mat4.translate(mat4.create(), mat4.create() , this.tankPosLeft);
+            this.bullets.push({modelMat: /*this.objects['tank2'].modelMatrix*/ m,orientationY:this.tankRotYLeft, owner : "leftPlayer"});
+        } 
+
+        if(this.tankPosRight[0]>97.5){
+            this.tankPosRight[0]=97.5;
         }
-        if(this.tankPos2[0] < -20){
-            this.tankPos2[0]= -20;
+        if(this.tankPosRight[0] < -97.5){
+            this.tankPosRight[0]= -97.5;
         }
-        if(this.tankPos2[2]>20){
-            this.tankPos2[2]=20;
+        if(this.tankPosRight[2]>97.5){
+            this.tankPosRight[2]=97.5;
         }
-        if(this.tankPos2[2]< -20){
-            this.tankPos2[2]= -20;
+        if(this.tankPosRight[2]< -97.5){
+            this.tankPosRight[2]= -97.5;
         }
     }
     private getTankDistance(): number{
-        let x = vec3.dist(this.tankPos,this.tankPos2);
+        let x = vec3.dist(this.tankPosLeft,this.tankPosRight);
         return x;
     }
 }

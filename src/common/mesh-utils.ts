@@ -228,11 +228,11 @@ export function Sphere(gl: WebGL2RenderingContext, resolution: number | [number,
             normals.push(x, y, z);
         }
     }
-    for(let i = 0; i < resolution[0]; i++){
-        for(let j = 0; j < resolution[1]; j++){
-            let index = j + i*(resolution[1]+1);
-            indices.push(index, index+resolution[1]+1, index+resolution[1]+2);
-            indices.push(index+resolution[1]+2, index+1, index);
+    for(let i = resolution[0]; i >= 0 ; i--){
+        for(let j = resolution[1]; j >= 0; j--){
+            let index = j + i*(resolution[1]-1);
+            indices.push(index, index+resolution[1]-1, index+resolution[1]-2);
+            indices.push(index+resolution[1]-2, index-1, index);
         }
     }
     let mesh = createEmptyMesh(gl);
